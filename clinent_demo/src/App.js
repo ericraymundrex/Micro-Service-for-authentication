@@ -5,11 +5,7 @@ import './App.css';
 function App() {
 
   Axios.defaults.withCredentials=true;
-  useEffect(()=>{
-    Axios.get("http://localhost:3001/login").then(response=>{
-      console.log(response);
-    })
-  },[]);
+ 
 
   //Sign-up - state
   const [userName,setUserName]=useState('');
@@ -57,6 +53,15 @@ function App() {
       }
     });
   };
+
+  useEffect(()=>{
+    Axios.get("http://localhost:3001/login").then(response=>{
+      if(response.data.LoggedIn===true){
+        setLoginStatus(response.data.user.Email);
+      }
+    })
+  },[]);
+
   return (
     <div className="App">
       <h1>Registration</h1>
