@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const bodyParser=require('body-parser');
 const cookieParser=require('cookie-parser');
 const session=require('express-session');
-
+const jwt=require('jsonwebtoken');
 
 
 
@@ -108,15 +108,18 @@ app.post('/login',async(req,res)=>{
             const validPassword = await bcrypt.compare(pass, user_find.Password);
             
             if (validPassword) {
+                
+                const id=user_find._id;
+                const token= jwt .sign({id},"thisissomeoneingreatedrepesssionineedHelp",{
+                     expiresIn: 300,
+                });
                 req.session.user=user_find;
-                res.send(user_find);
+                res.json({auth:true,token:token,user_find});
             }else{
-                res.send({message:"Wrong Password"})
-                console.log("Not a valid password")
+                res.json({auth:false,message:"Email Id or password is wrong!!"});
             }
         }catch(error){
-            res.send({err:error});
-            console.log(error);
+            res.json({auth:false,message:"No user exist"});
         } 
     }
 })
@@ -127,6 +130,26 @@ app.get("/login", (req,res)=>{
     }else{
         res.send({LoggedIn:false});
     }
+})
+
+const verifyJWT=(req,res,next)=>{
+    const token=req.headers["x-acsess-token"];
+    if(!token){
+        res.send("Token is not given");
+    }else{
+        jwt.verify(token,"thisissomeoneingreatedrepesssionineedHelp",(err,decoded)=>{
+            if(err){
+                res.json({auth:false,message:"Failed"})
+            }else{
+                req.user_id=decoded.id;
+                next();
+            }
+        })
+    }
+}
+
+app.get("/ ",verifyJWT,(req,res)=>{
+    res.send("Authenticated");
 })
 
 app.listen(3001, () => {
