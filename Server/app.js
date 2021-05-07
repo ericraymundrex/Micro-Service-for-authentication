@@ -3,10 +3,11 @@ const mongoose = require('mongoose');
 const cors=require('cors');
 const bcrypt = require('bcrypt');
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-const User = require('./models/user');
+const bodyParser=require('body-parser');
+const cookieParser=require('cookie-parser');
+const session=require('express-session');
+
+
 
 
 //-------------------------------------------DO NOT EDIT ABOVE------------------------------------------------
@@ -16,6 +17,25 @@ const orgin="http://localhost:3000";
 //============================================================================================================
 //--------------------------------------------DO NOT EDIT BELOW-----------------------------------------------
 
+const app = express();
+app.use(cors({
+    origin:[orgin],
+    methods:["GET","POST"],
+    credentials:true
+}));
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(session({
+    key:"userId",
+    secret:"HelloImsomeonewhodontcareaboutbutitotallycareaboutmylifeiwannadomtechiniitimstudyingshitandforlife",
+    resave:false,
+    saveUninitialized:false,
+    Cookie:{
+        expires:60*60*24 
+    }
+}))
+app.use(express.json());
+const User = require('./models/user');
 
 mongoose.connect('mongodb://localhost:27017/'+db, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => { console.log("MONGO CONNECTION OPEN") }).catch(err => {
     console.log("THERE IS A PROBLEM");
@@ -88,8 +108,8 @@ app.post('/login',async(req,res)=>{
             const validPassword = await bcrypt.compare(pass, user_find.Password);
             
             if (validPassword) {
-                res.send(user_find)
-                console.log("Valid password")
+                req.session.user=user_find;
+                res.send(user_find);
             }else{
                 res.send({message:"Wrong Password"})
                 console.log("Not a valid password")
@@ -98,6 +118,14 @@ app.post('/login',async(req,res)=>{
             res.send({err:error});
             console.log(error);
         } 
+    }
+})
+
+app.get("/login", (req,res)=>{
+    if(req.session.user){
+        res.send({LoggedIn:true,user:req.session.user});
+    }else{
+        res.send({LoggedIn:false});
     }
 })
 
