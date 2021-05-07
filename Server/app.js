@@ -70,10 +70,21 @@ app.post("/register",async(req,res)=>{
 });
 
 app.post('/login',async(req,res)=>{
+
+    //NOTE---------------
+    // user_find => will have {_id,Email,Password,Date}
+    // validPassword will only contain true or false
+    
+    
+
+    //Checking the request from the orgin
     if(checkFromAutenticFrontEnd(req.headers.origin)){
+        //Object dereferencing
         const {user,pass}=req.body;
+
+
         try {
-            const user_find = await User.findOne({ Email:user });
+            let user_find = await User.findOne({ Email:user });
             const validPassword = await bcrypt.compare(pass, user_find.Password);
             
             if (validPassword) {

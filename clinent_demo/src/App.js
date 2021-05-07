@@ -11,6 +11,9 @@ function App() {
   const [userNameLogin,setUserNameLogin]=useState('');
   const [passwordLogin,setPasswordLogin]=useState('');
 
+  //Login status
+  const [loginStatus,setLoginStatus]=useState('');
+
   const userNameHandlerLogin=(event)=>{
     setUserName(event.target.value);
   }
@@ -39,7 +42,11 @@ function App() {
     user:userNameLogin,
     pass:passwordLogin
     }).then((response)=>{
-      console.log(response);
+      if(response.data.message){
+        setLoginStatus(response.data.message);
+      }else{
+        setLoginStatus(response.data.Email);
+      }
     });
   };
   return (
@@ -57,6 +64,7 @@ function App() {
       <label>Password</label>
       <input type="text" onChange={passwordHandler}/>
       <button onClick={Login}>Login</button>
+      <div>{loginStatus}</div>
     </div>
   );
 }
