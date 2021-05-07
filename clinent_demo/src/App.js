@@ -47,9 +47,11 @@ function App() {
     pass:passwordLogin
     }).then((response)=>{
       if(!response.data.auth){
+        console.log(response.data);
         setLoginStatus(false);
       }else{
         setLoginStatus(true);
+        console.log(response.data); 
         localStorage.setItem("token",response.data.token);
       }
     });

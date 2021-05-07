@@ -53,7 +53,10 @@ app.use(express.urlencoded({ extended: true }));
 const checkFromAutenticFrontEnd=(serverOrgin)=>{
     return serverOrgin==orgin;
 }
-
+//Check the validation of email
+function emailIsValid (email) {
+    return /\S+@\S+\.\S+/.test(email)
+  }
 app.post("/register",async(req,res)=>{
 
     //NOTE---------------
@@ -77,14 +80,16 @@ app.post("/register",async(req,res)=>{
             }else{
                 // console.log(user+" "+hash);
                 // user is from => front-end hash is from bycrypt
-                const userTemp=new User({Email:user,Password:hash});
-                userTemp.save();
-                console.log("Entered in the database");
+                if(emailIsValid(user)){
+                    const userTemp=new User({Email:user,Password:hash});
+                    userTemp.save();
+                }
+                
             }
         });
 
     }else{
-        console.log("Network is wrong");
+        res.send("Nice try but we wont let you in!");
     }
 
 });
@@ -109,6 +114,8 @@ app.post('/login',async(req,res)=>{
             
             if (validPassword) {
                 
+                //Should not send the password to the front-end
+                user_find.Password=null;
                 const id=user_find._id;
                 const token= jwt .sign({id},"thisissomeoneingreatedrepesssionineedHelp",{
                      expiresIn: 300,
@@ -121,6 +128,8 @@ app.post('/login',async(req,res)=>{
         }catch(error){
             res.json({auth:false,message:"No user exist"});
         } 
+    }else{
+        res.send("Nice try but we wont let you in!");
     }
 })
 
