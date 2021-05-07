@@ -133,7 +133,7 @@ app.get("/login", (req,res)=>{
 })
 
 const verifyJWT=(req,res,next)=>{
-    const token=req.headers["x-acsess-token"];
+    const token=req.headers["x-access-token"];
     if(!token){
         res.send("Token is not given");
     }else{
@@ -148,7 +148,7 @@ const verifyJWT=(req,res,next)=>{
     }
 }
 
-app.get("/ ",verifyJWT,(req,res)=>{
+app.get("/isUserAuth",verifyJWT,(req,res)=>{
     res.send("Authenticated");
 })
 

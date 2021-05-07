@@ -50,7 +50,7 @@ function App() {
         setLoginStatus(false);
       }else{
         setLoginStatus(true);
-        localStorage.setItem("token","Bearer "+response.data.token)
+        localStorage.setItem("token",response.data.token);
       }
     });
   };
@@ -66,7 +66,7 @@ function App() {
   const userAuth=()=>{
     Axios.get("http://localhost:3001/isUserAuth",{
       headers:{
-        "x-axis-token":localStorage.getItem("token")
+        "x-access-token":localStorage.getItem("token")
       }
     }).then(response=>{
       console.log(response);
