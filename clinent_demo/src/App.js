@@ -18,6 +18,8 @@ function App() {
   //Login status
   const [loginStatus,setLoginStatus]=useState(false);
 
+  //LOGIN DETAILES
+  const [message,setMessage]=useState('');
   //Login
   const userNameHandlerReg=(event)=>{
     setUserName(event.target.value);
@@ -49,10 +51,12 @@ function App() {
       if(!response.data.auth){
         console.log(response.data);
         setLoginStatus(false);
+        setMessage(response.data.message);
       }else{
         setLoginStatus(true);
         console.log(response.data); 
         localStorage.setItem("token",response.data.token);
+        setMessage(response.data.user_find.Email)
       }
     });
   };
@@ -60,7 +64,7 @@ function App() {
   useEffect(()=>{
     Axios.get("http://localhost:3001/login").then(response=>{
       if(response.data.LoggedIn===true){
-        setLoginStatus(response.data.user.Email);
+        setLoginStatus(true);
       }
     })
   },[]);
@@ -90,7 +94,7 @@ function App() {
       <label>Password</label>
       <input type="text" onChange={passwordHandler}/>
       <button onClick={Login}>Login</button>
-      <div>{loginStatus}</div>
+      <div>{message}</div>
       {loginStatus&&(
         <button onClick={userAuth}>Authenticated</button>
       )}

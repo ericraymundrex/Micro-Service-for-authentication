@@ -2,24 +2,22 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors=require('cors');
 const bcrypt = require('bcrypt');
-
 const bodyParser=require('body-parser');
 const cookieParser=require('cookie-parser');
 const session=require('express-session');
 const jwt=require('jsonwebtoken');
 
 
-
 //-------------------------------------------DO NOT EDIT ABOVE------------------------------------------------
 //=================================-----------------=SET-UP=------------------================================
 const db = "Users";
-const orgin="http://localhost:3000";
+// const orgin="http://localhost:3000";
 //============================================================================================================
 //--------------------------------------------DO NOT EDIT BELOW-----------------------------------------------
 
 const app = express();
 app.use(cors({
-    origin:[orgin],
+    // origin:[orgin],
     methods:["GET","POST"],
     credentials:true
 }));
@@ -37,13 +35,13 @@ app.use(session({
 app.use(express.json());
 const User = require('./models/user');
 
+//DATABASE CONNECTIVITY
 mongoose.connect('mongodb://localhost:27017/'+db, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => { console.log("MONGO CONNECTION OPEN") }).catch(err => {
     console.log("THERE IS A PROBLEM");
     console.log(err)
 });
 
 mongoose.set('useFindAndModify', false);
-
 app.set("view engine", "ejs");
 app.set("views", "views");
 app.use(express.urlencoded({ extended: true }));
@@ -51,12 +49,15 @@ app.use(express.urlencoded({ extended: true }));
 
 //Check the Requestes from the Autentic Front-End
 const checkFromAutenticFrontEnd=(serverOrgin)=>{
-    return serverOrgin==orgin;
+    return true;
+    // return serverOrgin==orgin;
 }
 //Check the validation of email
 function emailIsValid (email) {
     return /\S+@\S+\.\S+/.test(email)
-  }
+}
+
+
 app.post("/register",async(req,res)=>{
 
     //NOTE---------------
@@ -68,6 +69,7 @@ app.post("/register",async(req,res)=>{
 
     //Checking the Request is from the orgin
     if(checkFromAutenticFrontEnd(req.headers.origin)){
+        // console.log(req.body);
         //Object dereferencing
         const {user,pass}=req.body;
 
@@ -77,17 +79,18 @@ app.post("/register",async(req,res)=>{
         User.findOne({Email:user}).then((user_find) => {
             if(user_find){
                 console.log("User exist");
+                res.json({auth:false,message:"User exixt"});
             }else{
                 // console.log(user+" "+hash);
                 // user is from => front-end hash is from bycrypt
                 if(emailIsValid(user)){
                     const userTemp=new User({Email:user,Password:hash});
                     userTemp.save();
+                    res.json({auth:false,message:"Successfully Registed !"});
                 }
                 
             }
         });
-
     }else{
         res.send("Nice try but we wont let you in!");
     }
@@ -113,7 +116,7 @@ app.post('/login',async(req,res)=>{
             const validPassword = await bcrypt.compare(pass, user_find.Password);
             
             if (validPassword) {
-                
+
                 //Should not send the password to the front-end
                 user_find.Password=null;
                 const id=user_find._id;
@@ -134,13 +137,18 @@ app.post('/login',async(req,res)=>{
 })
 
 app.get("/login", (req,res)=>{
-    if(req.session.user){
-        res.send({LoggedIn:true,user:req.session.user});
+    if(checkFromAutenticFrontEnd(req.headers.origin)){
+        if(req.session.user){
+            res.send({LoggedIn:true,user:req.session.user});
+        }else{
+            res.send({LoggedIn:false});
+        }
     }else{
-        res.send({LoggedIn:false});
+        res.send("Nice try but we wont let you in!");
     }
 })
 
+//IS-AUTENTICATED
 const verifyJWT=(req,res,next)=>{
     const token=req.headers["x-access-token"];
     if(!token){
@@ -156,11 +164,16 @@ const verifyJWT=(req,res,next)=>{
         })
     }
 }
-
 app.get("/isUserAuth",verifyJWT,(req,res)=>{
-    res.send("Authenticated");
-})
+    if(checkFromAutenticFrontEnd(req.headers.origin)){
+        res.send("Authenticated");
+    }
+});
 
+//404 - Page
+app.get("*",(req,res)=>{
+    res.send("Enter Valid Route 404-ROUTE NOT FOUND");
+})
 app.listen(3001, () => {
     console.log("SERVER STARTED");
 });
