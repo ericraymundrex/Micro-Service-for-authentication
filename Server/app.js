@@ -69,7 +69,7 @@ app.post("/register",async(req,res)=>{
 
     //Checking the Request is from the orgin
     if(checkFromAutenticFrontEnd(req.headers.origin)){
-        // console.log(req.body);
+        console.log(req.body);
         //Object dereferencing
         const {user,pass}=req.body;
 
@@ -78,7 +78,7 @@ app.post("/register",async(req,res)=>{
 
         User.findOne({Email:user}).then((user_find) => {
             if(user_find){
-                console.log("User exist");
+                // console.log("User exist");
                 res.json({auth:false,message:"User exixt"});
             }else{
                 // console.log(user+" "+hash);
@@ -94,7 +94,6 @@ app.post("/register",async(req,res)=>{
     }else{
         res.send("Nice try but we wont let you in!");
     }
-
 });
 
 app.post('/login',async(req,res)=>{
